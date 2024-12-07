@@ -1,0 +1,55 @@
+name: Build App With Buildpacks
+
+on:
+  workflow_dispatch:
+  push:
+      paths-ignore:
+          - '**.md'
+      branches:
+          - master
+
+jobs:
+  prepare:
+      name: Create Release
+      runs-on: ubuntu-latest
+      outputs:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          tag: ${{ steps.build_tag.outputs.tag }}
+      steps:
+          - name: Create Time Stamp Tag
+            id: build_tag
+            run: date +'tag=%Y-%m-%d_%H-%M-%S' >> $GITHUB_OUTPUT
+
+          - name: Create Release
+            id: create_release
+            uses: ncipollo/release-action@v1.11.1
+            with:
+                token: ${{ secrets.GITHUB_TOKEN }}
+                tag: ${{ steps.build_tag.outputs.tag }}
+                name: Release ${{ steps.build_tag.outputs.tag }}
+                draft: false
+                prerelease: false
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: buildpacks/github-actions/setup-pack@v5.0.0
+      - name: Build with buildpack
+        run: pack build paketo-demo-app --builder paketobuildpacks/builder-jammy-base
+      - name: Export image
+        run: |
+          set -xe
+          container=$(docker create paketo-demo-app)
+          docker cp $container:. - > paketo-demo-app.tar
+          docker rm $container
+          xz paketo-demo-app.tar
+      - name: Upload Release Asset
+        id: upload_release_asset
+        uses: sekwah41/upload-release-assets@v1.1.0
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+            upload_url: ${{ needs.prepare.outputs.upload_url }}
+            asset_path: ./paketo-demo-app.tar.xz
+            asset_name: paketo-demo-app-${{ needs.prepare.outputs.tag }}.tar.xz
+            asset_content_type: application/x-xz
