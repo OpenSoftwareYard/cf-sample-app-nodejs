@@ -49,7 +49,7 @@ jobs:
           xz paketo-demo-app.tar
       - name: Upload Release Asset
         id: upload_release_asset
-        uses: sekwah41/upload-release-assets@v1.1.0
+        uses: sekwah41/upload-release-assets@v1
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
