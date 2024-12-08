@@ -47,6 +47,7 @@ jobs:
           docker cp $container:. - > paketo-demo-app.tar
           docker rm $container
           xz paketo-demo-app.tar
+          docker inspect paketo-demo-app > paketo-demo-app.json
       - name: Upload Release Asset
         id: upload_release_asset
         uses: sekwah41/upload-release-assets@v1
@@ -57,3 +58,13 @@ jobs:
             asset_path: ./paketo-demo-app.tar.xz
             asset_name: paketo-demo-app-${{ needs.prepare.outputs.tag }}.tar.xz
             asset_content_type: application/x-xz
+      - name: Upload Release Asset
+        id: upload_release_asset
+        uses: sekwah41/upload-release-assets@v1
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+            upload_url: ${{ needs.prepare.outputs.upload_url }}
+            asset_path: ./paketo-demo-app.json
+            asset_name: paketo-demo-app-${{ needs.prepare.outputs.tag }}.json
+            asset_content_type: application/json
