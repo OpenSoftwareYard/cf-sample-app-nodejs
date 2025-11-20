@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
   prepare:
@@ -40,6 +41,10 @@ jobs:
       - uses: buildpacks/github-actions/setup-pack@v5.0.0
       - name: Build with buildpack
         run: pack build paketo-demo-app --builder paketobuildpacks/builder-jammy-base
+      - name: Push image
+        run: |
+          docker tag paketo-demo-app ghcr.io/OpenSoftwareYard/cf-sample-app-nodejs:latest
+          docker push ghcr.io/OpenSoftwareYard/cf-sample-app-nodejs:latest
       - name: Export image
         run: |
           set -xe
