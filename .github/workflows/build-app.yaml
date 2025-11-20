@@ -44,7 +44,7 @@ jobs:
       - name: Push image
         run: |
           docker tag paketo-demo-app ghcr.io/opensoftwareyard/cf-sample-app-nodejs:latest
-          docker push ghcr.io/OpenSoftwareYard/cf-sample-app-nodejs:latest
+          docker push ghcr.io/opensoftwareyard/cf-sample-app-nodejs:latest
       - name: Export image
         run: |
           set -xe
